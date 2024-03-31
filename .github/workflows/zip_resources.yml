@@ -1,0 +1,39 @@
+name: Zip and Push to Archive Branch
+
+on:
+  push:
+    branches:
+      - main  # Trigger on pushes to main branch
+
+jobs:
+  zip-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0  # Ensure we get all the history
+
+    - name: Install zip
+      run: sudo apt-get install zip
+
+    - name: Zip the repository
+      run: zip -r resources.zip . -x "*.git*"
+
+    - name: Checkout archive branch
+      uses: actions/checkout@v2
+      with:
+        ref: latest-release
+        path: latest-release
+
+    - name: Replace ZIP in archive branch
+      run: |
+        mv resources.zip latest-release/
+        cd latest-release
+        git config user.name "SS Resources"
+        git config user.email "SS_Resources@users.noreply.github.com"
+        git add resources.zip
+        git commit -m "Update resource pack ZIP"
+        git push
+
